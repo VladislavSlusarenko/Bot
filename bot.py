@@ -1,3 +1,4 @@
+import os
 from telegram import Update, ReplyKeyboardMarkup, InputFile
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes, ConversationHandler
 
@@ -8,7 +9,7 @@ ADMIN_ID = 1345239767
 
 # ==== СТАНИ ====
 CONSULT_NAME, CONSULT_PHONE = range(2)
-BUY_AREA, BUY_REGION, BUY_BUDGET = range(2, 5)
+BUY_NAME, BUY_PHONE, BUY_AREA, BUY_REGION, BUY_BUDGET = range(2, 7)
 
 # ==== МЕНЮ ====
 main_menu = ReplyKeyboardMarkup([
@@ -28,7 +29,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # ==== ЗАЯВКА НА КОНСУЛЬТАЦІЮ ====
 async def consult_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Як вас звати?")
-    return CONSULT_NAME
+    return CONSULT_NAME 
 
 async def consult_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data["name"] = update.message.text
@@ -49,6 +50,16 @@ async def consult_phone(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # ==== ЗАЯВКА НА ТАУНХАУС ====
 async def buy_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("Як вас звати?")
+    return BUY_NAME
+
+async def buy_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data["name"] = update.message.text
+    await update.message.reply_text("Введіть ваш номер телефону:")
+    return BUY_PHONE
+
+async def buy_phone(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data["phone"] = update.message.text
     await update.message.reply_text("Вкажіть бажану площу (наприклад: 80-120 м²):")
     return BUY_AREA
 
@@ -68,6 +79,8 @@ async def buy_budget(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     msg = (
         "🏡 Нова заявка на придбання Таунхауса:\n"
+        f"👤 Ім’я: {context.user_data['name']}\n"
+        f"📱 Телефон: {context.user_data['phone']}\n"
         f"📐 Площа: {context.user_data['area']}\n"
         f"📍 Район: {context.user_data['region']}\n"
         f"💰 Бюджет: {context.user_data['budget']}"
@@ -78,23 +91,34 @@ async def buy_budget(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # ==== ВІЗУАЛІЗАЦІЯ ====
 async def send_visual(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
-        with open("data/visual.jpg", "rb") as photo:
-            await update.message.reply_photo(photo, caption="Ось візуалізація об'єкта 📷")
+        # Шлях до папки з візуалізаціями
+        folder_path = "data/visualizations"
+        
+        # Отримуємо список всіх файлів у папці
+        image_files = [f for f in os.listdir(folder_path) if f.startswith("visual") and f.endswith(".jpeg")]
+        
+        if image_files:
+            # Відправляємо всі зображення
+            for image_file in image_files:
+                image_path = os.path.join(folder_path, image_file)
+                with open(image_path, "rb") as photo:
+                    await update.message.reply_photo(photo)
+        else:
+            await update.message.reply_text("Візуалізації поки що немає.")
     except FileNotFoundError:
         await update.message.reply_text("Файл візуалізації ще не додано.")
 
 # ==== КАНАЛ ====
 async def go_to_channel(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Переходь у наш канал 👉 https://t.me/твій_канал")
+    await update.message.reply_text("Переходь у наш канал 👉 https://t.me/RCG_company")
 
 # ==== ПРО КОМПАНІЮ ====
 async def about_company(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "🏗 Наша компанія займається будівництвом та продажем якісної нерухомості в Одесі.\n"
-        "✅ Більше 10 років на ринку\n"
-        "📞 Консультації та підтримка\n"
-        "🌐 Сайт: https://example.com\n"
-        "📸 Instagram: https://instagram.com/example"
+        "🏘Ми будівельна компанія Realty Consulting Group що має багаторічний досвід в будівництві, з початку повномасштабного вторгнення ворога, ми побудували більше ніж 300 будинків в місті Одеса. Дякуємо що довіряєте та обираєте саме нас.🤝"
+        "📞 Консультації та підтримка: +380 93 912 14 14\n"
+        "🌐 Сайт: https://rcg-od.mssg.me/\n"
+        "📸 Instagram: https://www.instagram.com/realty_consulting?igsh=dGVtY3d1NTh2ZWRn&utm_source=qr"
     )
 
 # ==== НЕВІДОМА КОМАНДА ====
@@ -119,6 +143,8 @@ def main():
     buy_conv = ConversationHandler(
         entry_points=[MessageHandler(filters.Regex(".*Таунхауса.*"), buy_start)],
         states={
+            BUY_NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, buy_name)],
+            BUY_PHONE: [MessageHandler(filters.TEXT & ~filters.COMMAND, buy_phone)],
             BUY_AREA: [MessageHandler(filters.TEXT & ~filters.COMMAND, buy_area)],
             BUY_REGION: [MessageHandler(filters.TEXT & ~filters.COMMAND, buy_region)],
             BUY_BUDGET: [MessageHandler(filters.TEXT & ~filters.COMMAND, buy_budget)],
