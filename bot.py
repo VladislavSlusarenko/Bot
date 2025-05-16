@@ -110,7 +110,7 @@ async def send_visual(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # ==== КАНАЛ ====
 async def go_to_channel(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Переходь у наш канал 👉 https://t.me/RCG_company")
+    await update.message.reply_text("Переходь у наш канал 👉 https://t.me/RCG_nedvigimost")
 
 # ==== ПРО КОМПАНІЮ ====
 async def about_company(update: Update, context: ContextTypes.DEFAULT_TYPE):
