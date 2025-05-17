@@ -3,7 +3,7 @@ from telegram import Update, ReplyKeyboardMarkup, InputFile
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes, ConversationHandler
 
 # ==== НАЛАШТУВАННЯ ====
-BOT_TOKEN = "8000013724:AAFNPHiXBwgEdnsZjQ4gTXXX_Rq-wrn3d18"
+BOT_TOKEN = "7331886812:AAGBtC0OqSQhZy2Z0gQnNTeHRJZRf6i5Y9I"
 ADMIN_ID = 1345239767
  # 🔹 Замiни на свій Telegram ID
 
